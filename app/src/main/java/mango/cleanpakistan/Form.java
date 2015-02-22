@@ -44,7 +44,7 @@ public class Form extends ActionBarActivity {
     private Uri imgURi;
     private Uri selectedImageUri;
     private Uri selectedImage;
-    private ProgressBar progressBar;
+//    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,12 +54,11 @@ public class Form extends ActionBarActivity {
 
         Parse.initialize(this, "QYP3WEGkoWbgGFcjUVO6n4x18s7pLziFbHJHZcDf", "yKm8tqxzFIkXnmWlY9jHISd6wPbTD9zcSS13ysdo");
         ParseInstallation.getCurrentInstallation().saveInBackground();
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+//        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         imgBtn = (ImageView) findViewById(R.id.imageButton);
         btnReport = (Button) findViewById(R.id.btn_report);
         etMessage = (EditText) findViewById(R.id.etMessage);
         etEventDate = (EditText) findViewById(R.id.etEventDate);
-
         imgBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,10 +106,10 @@ public class Form extends ActionBarActivity {
 
                     @Override
                     public void done(ParseException e) {
+                     setProgressBarIndeterminateVisibility(false);
                         if (e == null) {
                             //success!
                             Toast.makeText(Form.this, "Successfully Uploaded Images", Toast.LENGTH_LONG).show();
-                            setProgressBarIndeterminateVisibility(false);
 
                         } else {
                             AlertDialog.Builder builder = new AlertDialog.Builder(
