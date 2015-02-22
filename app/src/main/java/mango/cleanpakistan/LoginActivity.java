@@ -27,8 +27,6 @@ public class LoginActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        Parse.initialize(this, "QYP3WEGkoWbgGFcjUVO6n4x18s7pLziFbHJHZcDf", "yKm8tqxzFIkXnmWlY9jHISd6wPbTD9zcSS13ysdo");
-        ParseInstallation.getCurrentInstallation().saveInBackground();
 
 
 
@@ -58,7 +56,7 @@ public class LoginActivity extends ActionBarActivity {
                     Log.d("error", username);
                     ParseUser.logInInBackground(username, password, new LogInCallback() {
                         public void done(ParseUser user, ParseException e) {
-                            if (e != null) {
+                            if (e == null) {
                                 Intent intent = new Intent(
                                         LoginActivity.this,
                                         mango.cleanpakistan.MainActivity.class);

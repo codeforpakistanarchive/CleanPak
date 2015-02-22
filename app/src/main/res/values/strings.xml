@@ -8,5 +8,6 @@
     <string name="title_activity_sign_up">SignUp</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_main">Main</string>
+    <string name="title_activity_notif_view">NotifView</string>
 
 </resources>

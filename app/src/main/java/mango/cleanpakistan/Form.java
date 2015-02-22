@@ -1,6 +1,7 @@
 package mango.cleanpakistan;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -12,10 +13,22 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.parse.Parse;
+import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseGeoPoint;
+import com.parse.ParseInstallation;
+import com.parse.ParseObject;
+import com.parse.ParsePush;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.io.File;
 
@@ -30,11 +43,18 @@ public class Form extends ActionBarActivity {
     Bitmap bitmap;
     private Uri imgURi;
     private Uri selectedImageUri;
+    private Uri selectedImage;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form);
+
+        Parse.initialize(this, "QYP3WEGkoWbgGFcjUVO6n4x18s7pLziFbHJHZcDf", "yKm8tqxzFIkXnmWlY9jHISd6wPbTD9zcSS13ysdo");
+        ParseInstallation.getCurrentInstallation().saveInBackground();
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         imgBtn = (ImageView) findViewById(R.id.imageButton);
         btnReport = (Button) findViewById(R.id.btn_report);
         etMessage = (EditText) findViewById(R.id.etMessage);
@@ -51,16 +71,66 @@ public class Form extends ActionBarActivity {
             }
         });
 
-//        btnReport.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
+        btnReport.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 //                Intent inShare = new Intent(Intent.ACTION_SEND);
 //                inShare.setType("Image/png");
 //                inShare.putExtra(Intent.EXTRA_STREAM, imgURi);
 //                startActivity(inShare);
-//
-//            }
-//        });
+
+                setProgressBarIndeterminateVisibility(true);
+                ParseObject message = new ParseObject("Form");
+                message.put("username", ParseUser.getCurrentUser().getUsername());
+                message.put("location", "SEECS, NUST University");
+                message.put("message", etMessage.getText().toString());
+                ParseGeoPoint point = new ParseGeoPoint(33.6455663,72.9560122);
+                message.put("gPoint", point);
+
+
+
+                ////
+                byte[] fileBytes = FileHelper.getByteArrayFromFile(Form.this, selectedImageUri);
+
+                if (fileBytes == null) {
+                    message = null;
+                } else {
+
+                    fileBytes = FileHelper.reduceImageForUpload(fileBytes);
+                }
+                String fileName = FileHelper.getFileName(Form.this, selectedImageUri, "image");
+                ParseFile file = new ParseFile(fileName, fileBytes);
+                message.put("picture", file);
+
+
+                message.saveInBackground(new SaveCallback() {
+
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            //success!
+                            Toast.makeText(Form.this, "Successfully Uploaded Images", Toast.LENGTH_LONG).show();
+                            setProgressBarIndeterminateVisibility(false);
+
+                        } else {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(
+                                    Form.this);
+                            builder.setMessage(e.getMessage().toString())
+                                    .setTitle("Error Uploading")
+                                    .setPositiveButton(android.R.string.ok, null);
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                        }
+                    }
+                });
+
+                ParsePush push = new ParsePush();
+                push.setMessage(etMessage.getText().toString() + ". The place near I-8 in Pindi is too dirty - lets join and clean Pakistan on Sunday1st, March ");
+                push.sendInBackground();
+
+                ////
+            }
+        });
 
     }
 
@@ -79,16 +149,21 @@ public class Form extends ActionBarActivity {
 
         if (requestCode == TAKE_PHOTO_REQUEST) {
 
+
             if (resultCode == Activity.RESULT_OK) {
 
                 try {
-                    Uri selectedImage = selectedImageUri;
+                    selectedImage = selectedImageUri;
                     //getContentResolver().notifyChange(selectedImage, null);
                     ContentResolver cr = getContentResolver();
                     Bitmap bitmap;
-                    bitmap = android.provider.MediaStore.Images.Media
-                            .getBitmap(cr, selectedImage);
+                    bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, selectedImage);
                     imgBtn.setImageBitmap(bitmap);
+
+                    ////
+
+
+                    ////
 
                 } catch (Exception e) {
                     Toast.makeText(this, "Failed to load", Toast.LENGTH_SHORT)

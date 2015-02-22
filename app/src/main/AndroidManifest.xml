@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="mango.cleanpakistan" >
 
+    <!-- replace @drawable/push_icon with your push icon identifier -->
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -11,6 +13,7 @@
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <uses-feature android:name="android.hardware.camera" />
 
@@ -24,13 +27,43 @@
 
     <uses-permission android:name="mango.cleanpakistan.permission.C2D_MESSAGE" />
 
+    <service android:name="com.parse.PushService" />
+
+    <receiver android:name="com.parse.ParseBroadcastReceiver" >
+        <intent-filter>
+            <action android:name="android.intent.action.BOOT_COMPLETED" />
+            <action android:name="android.intent.action.USER_PRESENT" />
+        </intent-filter>
+    </receiver>
+    <receiver
+        android:name="com.parse.GcmBroadcastReceiver"
+        android:permission="com.google.android.c2dm.permission.SEND" >
+        <intent-filter>
+            <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+
+<!--               IMPORTANT: Change "com.parse.tutorials.pushnotifications" to match your app's package name. -->
+            <category android:name="com.parse.tutorials.pushnotifications" />
+        </intent-filter>
+    </receiver>
+    <receiver
+        android:name="com.parse.ParsePushBroadcastReceiver"
+        android:exported="false" >
+        <intent-filter>
+            <action android:name="com.parse.push.intent.RECEIVE" />
+            <action android:name="com.parse.push.intent.DELETE" />
+            <action android:name="com.parse.push.intent.OPEN" />
+        </intent-filter>
+    </receiver>
+
     <application
+        android:name=".CleanPakistanApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".LoginActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,11 +71,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".Form"
-        android:label="Report and Tweet">
-        </activity>
+            android:label="Report and Tweet" />
 
         <service android:name="com.parse.PushService" />
 
@@ -75,11 +106,19 @@
 
         <activity
             android:name=".SignUp"
-            android:label="@string/title_activity_sign_up" >
-        </activity>
+            android:label="@string/title_activity_sign_up" />
+        <activity
+            android:name=".LoginActivity"
+            android:label="Login Please!" />
 
-        <activity android:name=".MainActivity"
-            android:label="Select Your Choice"></activity>
+        <meta-data
+            android:name="com.parse.push.notification_icon"
+            android:resource="@drawable/push_icon" />
+
+        <activity
+            android:name=".NotifView"
+            android:label="@string/title_activity_notif_view" >
+        </activity>
     </application>
 
 </manifest>
