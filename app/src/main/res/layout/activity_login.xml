@@ -3,6 +3,7 @@
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@drawable/iphone"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
 
@@ -16,7 +17,9 @@
         android:layout_marginTop="81dp"
         android:layout_below="@+id/textView2"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:textColor="#ffffffff"
+        android:textColorHint="#ffffffff" />
 
     <Button
         android:layout_width="match_parent"
@@ -28,7 +31,7 @@
         android:layout_below="@+id/txt_user"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="40dp"
-        android:background="#ff6b9cff"
+        android:background="#bdc3c7"
         android:layout_marginBottom="10dp" />
 
     <Button
@@ -40,7 +43,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="40dp"
-        android:background="#ff6b9cff" />
+        android:background="#bdc3c7" />
 
     <EditText
         android:layout_width="match_parent"
@@ -51,16 +54,19 @@
         android:hint="Password"
         android:layout_below="@+id/txt_user"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:textColorHint="#ffffffff"
+        android:textColor="#ffffffff" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="CleanPakistan"
+        android:text="Clean Pakistan"
         android:id="@+id/textView2"
-        android:textSize="35dp"
+        android:textSize="40dp"
         android:layout_marginTop="51dp"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:textColor="#ffffffff" />
 
 </RelativeLayout>

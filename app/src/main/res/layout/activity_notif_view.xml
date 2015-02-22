@@ -17,7 +17,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Proposal Message"
+        android:text="This is a sample cleanUp message for community"
         android:id="@+id/proMsg"
         android:layout_below="@+id/ivPostedImage"
         android:layout_centerHorizontal="true"
@@ -33,12 +33,13 @@
         android:layout_below="@+id/proMsg"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="55dp"
-        android:hint="Propose a new date" />
+        android:hint="Propose a new date"
+        android:text="21-2-2015:22:53" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No"
+        android:text="Not Going"
         android:id="@+id/btnNo"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
@@ -47,7 +48,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Yes"
+        android:text="I&apos;m In"
         android:id="@+id/btn_yes"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
