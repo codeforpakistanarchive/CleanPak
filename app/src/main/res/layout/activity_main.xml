@@ -12,7 +12,7 @@
         android:text="Post a Shot"
         android:background="#575958"
         android:id="@+id/btnShot"
-        android:textColor="#ffffffff"
+        android:textColor="@android:color/white"
         android:textSize="25dp"
         android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
@@ -21,10 +21,10 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        android:text="VIEW MAP"
+        android:text="View Map"
         android:id="@+id/button"
         android:background="#575958"
-        android:textColor="#ffffffff"
+        android:textColor="@android:color/white"
         android:layout_marginTop="49dp"
         android:layout_below="@+id/btnShot"
         android:layout_alignParentRight="true"
@@ -35,12 +35,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="C L E A N  P A K I S T A N"
-        android:id="@+id/textView3"
-        android:textSize="27dp"
+        android:text="@string/app_name"
+        android:id="@+id/tvAppTitle"
+        android:textSize="40dp"
         android:layout_marginTop="51dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_gravity="center"
-        android:textColor="#ffffffff" />
+        android:textColor="@android:color/white" />
 </RelativeLayout>

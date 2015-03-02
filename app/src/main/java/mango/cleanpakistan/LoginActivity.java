@@ -2,6 +2,7 @@ package mango.cleanpakistan;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -11,12 +12,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
-import mango.cleanpakistan.*;
 import com.parse.LogInCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
-import com.parse.ParseInstallation;
 import com.parse.ParseUser;
 
 public class LoginActivity extends ActionBarActivity {
@@ -26,7 +25,7 @@ public class LoginActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        initLayout();
 
 
 
@@ -82,16 +81,11 @@ public class LoginActivity extends ActionBarActivity {
                 }
 
 
-
-
-
-                /////////////
-
             }
         });
 
-        Button btn_Signup = (Button) findViewById(R.id.btn_sgn);
-        btn_Signup.setOnClickListener(new View.OnClickListener(){
+        TextView tvSignUp = (TextView) findViewById(R.id.tv_signUp);
+        tvSignUp.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
                 Intent intent = new Intent(LoginActivity.this, SignUp.class);
@@ -101,6 +95,13 @@ public class LoginActivity extends ActionBarActivity {
         });
     }
 
+    private void initLayout() {
+        Typeface tf = Typeface.createFromAsset(getAssets(),
+                "fonts/BrannbollFet.ttf");
+
+        TextView txtTitle = (TextView) findViewById(R.id.tvAppTitle);
+        txtTitle.setTypeface(tf);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

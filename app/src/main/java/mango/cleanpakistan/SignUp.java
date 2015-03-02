@@ -2,6 +2,7 @@ package mango.cleanpakistan;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -9,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.parse.ParseException;
 import com.parse.ParseUser;
@@ -23,6 +25,7 @@ public class SignUp extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+        initLayout();
         user=(EditText) findViewById(R.id.etuser);
         email=(EditText) findViewById(R.id.etemail);
         pwd=(EditText) findViewById(R.id.etpwd);
@@ -89,6 +92,13 @@ public class SignUp extends ActionBarActivity {
         });
     }
 
+    private void initLayout() {
+        Typeface tf = Typeface.createFromAsset(getAssets(),
+                "fonts/BrannbollFet.ttf");
+
+        TextView txtTitle = (TextView) findViewById(R.id.tvAppTitle);
+        txtTitle.setTypeface(tf);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
