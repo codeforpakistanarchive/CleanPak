@@ -30,12 +30,17 @@ import com.parse.ParsePush;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 
 public class Form extends ActionBarActivity {
     private static final int TAKE_PHOTO_REQUEST = 1001;
     private static final String TAG = mango.cleanpakistan.MainActivity.class.getSimpleName();
     private static final String FILE_NAME = "MyFile";
+    String curObjectId;
+    JSONObject jsonObject;
     Button btnReport;
     ImageView imgBtn;
     EditText etMessage;
@@ -83,9 +88,8 @@ public class Form extends ActionBarActivity {
                 message.put("username", ParseUser.getCurrentUser().getUsername());
                 message.put("location", "SEECS, NUST University");
                 message.put("message", etMessage.getText().toString());
-                ParseGeoPoint point = new ParseGeoPoint(33.6455663,72.9560122);
+                ParseGeoPoint point = new ParseGeoPoint(33.6455663, 72.9560122);
                 message.put("gPoint", point);
-
 
 
                 ////
@@ -102,14 +106,32 @@ public class Form extends ActionBarActivity {
                 message.put("picture", file);
 
 
+                final ParseObject finalMessage = message;
                 message.saveInBackground(new SaveCallback() {
 
                     @Override
                     public void done(ParseException e) {
-                     setProgressBarIndeterminateVisibility(false);
+                        setProgressBarIndeterminateVisibility(false);
                         if (e == null) {
                             //success!
                             Toast.makeText(Form.this, "Successfully Uploaded Images", Toast.LENGTH_LONG).show();
+                            curObjectId = finalMessage.getObjectId();
+                            try {
+                                jsonObject = new JSONObject();
+                                jsonObject.put("objectId", curObjectId);
+                                jsonObject.put("alert", etMessage.getText().toString());
+//                                jsonObject.put("message", etMessage.getText().toString());
+                                Toast.makeText(Form.this, jsonObject.toString(), Toast.LENGTH_LONG).show();
+
+                                ParsePush push = new ParsePush();
+//                                push.setMessage(etMessage.getText().toString() + ". The place near I-8 in Pindi is too dirty - lets join and clean Pakistan on Sunday1st, March ");
+                                push.setData(jsonObject);
+                                push.sendInBackground();
+
+                            } catch (JSONException e1) {
+                                e1.printStackTrace();
+                            }
+//
 
                         } else {
                             AlertDialog.Builder builder = new AlertDialog.Builder(
@@ -123,15 +145,13 @@ public class Form extends ActionBarActivity {
                     }
                 });
 
-                ParsePush push = new ParsePush();
-                push.setMessage(etMessage.getText().toString() + ". The place near I-8 in Pindi is too dirty - lets join and clean Pakistan on Sunday1st, March ");
-                push.sendInBackground();
 
                 ////
             }
         });
 
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

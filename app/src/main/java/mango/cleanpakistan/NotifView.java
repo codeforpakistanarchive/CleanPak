@@ -1,5 +1,6 @@
 package mango.cleanpakistan;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -23,8 +24,10 @@ public class NotifView extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notif_view);
+        Intent intent = getIntent();
+        String objectId = intent.getStringExtra("objectId");
 
-    ivPostedImage = (ImageView) findViewById(R.id.ivPostedImage);
+        ivPostedImage = (ImageView) findViewById(R.id.ivPostedImage);
         tvProposedMsg = (TextView) findViewById(R.id.proMsg);
         etNewDate = (EditText) findViewById(R.id.etDate);
         btnNo = (Button) findViewById(R.id.btnNo);

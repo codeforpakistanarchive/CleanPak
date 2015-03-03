@@ -26,9 +26,6 @@ public class LoginActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         initLayout();
-
-
-
         final EditText input_user = (EditText)findViewById(R.id.txt_user);
         final EditText input_pass = (EditText)findViewById(R.id.etpwdu);
 
