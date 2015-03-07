@@ -101,88 +101,91 @@ public class Form extends ActionBarActivity implements LocationListener {
                 geocoder = new Geocoder(Form.this);
                 Criteria criteria = new Criteria();
                 provider = locationManager.getBestProvider(criteria, false);
-                location = locationManager.getLastKnownLocation(provider);
+
                 locationManager.requestLocationUpdates(provider, 400, 1, Form.this );
+                location = locationManager.getLastKnownLocation(provider);
 
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                String addressText = "" ;
+                if(location != null) {
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+                    String addressText = "";
 
-                try{
-                    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(), 10);
-                    for (Address address: addresses){
-                        //Toast.makeText(Form.this,"Address: "+address.getAddressLine(0),Toast.LENGTH_LONG).show();
-                        addressText= addressText+address.getAddressLine(0)+", ";
-                        //Toast.makeText(Form.this,addressText,Toast.LENGTH_LONG).show();
+                    try {
+                        List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 10);
+                        for (Address address : addresses) {
+                            //Toast.makeText(Form.this,"Address: "+address.getAddressLine(0),Toast.LENGTH_LONG).show();
+                            addressText = addressText + address.getAddressLine(0) + ", ";
+                            //Toast.makeText(Form.this,addressText,Toast.LENGTH_LONG).show();
+                        }
+                    } catch (IOException e) {
+                        Toast.makeText(Form.this, "" + e, Toast.LENGTH_SHORT).show();
                     }
-                }catch(IOException e){
-                    Toast.makeText(Form.this,""+e,Toast.LENGTH_SHORT).show();
-                }
 
 
-                setProgressBarIndeterminateVisibility(true);
-                ParseObject message = new ParseObject("Form");
-                message.put("username", ParseUser.getCurrentUser().getUsername());
-                message.put("location", addressText);
-                message.put("message", etMessage.getText().toString());
-                ParseGeoPoint point = new ParseGeoPoint(latitude, longitude);
-                message.put("gPoint", point);
+                    setProgressBarIndeterminateVisibility(true);
+                    ParseObject message = new ParseObject("Form");
+                    message.put("username", ParseUser.getCurrentUser().getUsername());
+                    message.put("location", addressText);
+                    message.put("message", etMessage.getText().toString());
+                    ParseGeoPoint point = new ParseGeoPoint(latitude, longitude);
+                    message.put("gPoint", point);
+
+                    ////
+                    byte[] fileBytes = FileHelper.getByteArrayFromFile(Form.this, selectedImageUri);
+
+                    if (fileBytes == null) {
+                        message = null;
+                    } else {
+
+                        fileBytes = FileHelper.reduceImageForUpload(fileBytes);
+                    }
+                    String fileName = FileHelper.getFileName(Form.this, selectedImageUri, "image");
+                    ParseFile file = new ParseFile(fileName, fileBytes);
+                    message.put("picture", file);
 
 
-                ////
-                byte[] fileBytes = FileHelper.getByteArrayFromFile(Form.this, selectedImageUri);
+                    final ParseObject finalMessage = message;
+                    message.saveInBackground(new SaveCallback() {
 
-                if (fileBytes == null) {
-                    message = null;
-                } else {
-
-                    fileBytes = FileHelper.reduceImageForUpload(fileBytes);
-                }
-                String fileName = FileHelper.getFileName(Form.this, selectedImageUri, "image");
-                ParseFile file = new ParseFile(fileName, fileBytes);
-                message.put("picture", file);
-
-
-                final ParseObject finalMessage = message;
-                message.saveInBackground(new SaveCallback() {
-
-                    @Override
-                    public void done(ParseException e) {
-                        setProgressBarIndeterminateVisibility(false);
-                        if (e == null) {
-                            //success!
-                            Toast.makeText(Form.this, "Successfully Uploaded Images", Toast.LENGTH_LONG).show();
-                            curObjectId = finalMessage.getObjectId();
-                            try {
-                                jsonObject = new JSONObject();
-                                jsonObject.put("objectId", curObjectId);
-                                jsonObject.put("alert", etMessage.getText().toString());
+                        @Override
+                        public void done(ParseException e) {
+                            setProgressBarIndeterminateVisibility(false);
+                            if (e == null) {
+                                //success!
+                                Toast.makeText(Form.this, "Successfully Uploaded Images", Toast.LENGTH_LONG).show();
+                                curObjectId = finalMessage.getObjectId();
+                                try {
+                                    jsonObject = new JSONObject();
+                                    jsonObject.put("objectId", curObjectId);
+                                    jsonObject.put("alert", etMessage.getText().toString());
 //                                jsonObject.put("message", etMessage.getText().toString());
-                                Toast.makeText(Form.this, jsonObject.toString(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(Form.this, jsonObject.toString(), Toast.LENGTH_LONG).show();
 
-                                ParsePush push = new ParsePush();
+                                    ParsePush push = new ParsePush();
 //                                push.setMessage(etMessage.getText().toString() + ". The place near I-8 in Pindi is too dirty - lets join and clean Pakistan on Sunday1st, March ");
-                                push.setData(jsonObject);
-                                push.sendInBackground();
+                                    push.setData(jsonObject);
+                                    push.sendInBackground();
 
-                            } catch (JSONException e1) {
-                                e1.printStackTrace();
-                            }
+                                } catch (JSONException e1) {
+                                    e1.printStackTrace();
+                                }
 //
 
-                        } else {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(
-                                    Form.this);
-                            builder.setMessage(e.getMessage().toString())
-                                    .setTitle("Error Uploading")
-                                    .setPositiveButton(android.R.string.ok, null);
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
+                            } else {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(
+                                        Form.this);
+                                builder.setMessage(e.getMessage().toString())
+                                        .setTitle("Error Uploading")
+                                        .setPositiveButton(android.R.string.ok, null);
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                            }
                         }
-                    }
-                });
+                    });
 
-
+                }else{
+                    Toast.makeText(Form.this,"Please turn on GPS First",Toast.LENGTH_SHORT).show();
+                }
                 ////
             }
         });
