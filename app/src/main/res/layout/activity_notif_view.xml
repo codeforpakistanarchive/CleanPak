@@ -6,35 +6,45 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="mango.cleanpakistan.NotifView">
 
-    <ImageView
+   <ScrollView
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_marginBottom="60dp"
+       android:layout_centerHorizontal="true">
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/ivPostedImage"
-        android:background="@drawable/garb"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:orientation="vertical">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/ivPostedImage"
+            android:scaleType="fitXY"
+            android:src="@drawable/garb"
+            android:layout_centerHorizontal="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="This is a sample cleanUp message for community"
-        android:id="@+id/proMsg"
-        android:layout_below="@+id/ivPostedImage"
-        android:layout_centerHorizontal="true"
-        android:textSize="20dp"
-        android:paddingTop="10dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="This is a sample cleanUp message for community"
+            android:id="@+id/proMsg"
+            android:layout_centerHorizontal="true"
+            android:textSize="20dp"
+            android:paddingTop="10dp" />
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="date"
-        android:ems="10"
-        android:id="@+id/etDate"
-        android:layout_below="@+id/proMsg"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="55dp"
-        android:hint="Propose a new date"
-        android:text="21-2-2015:22:53" />
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="date"
+            android:ems="10"
+            android:id="@+id/etDate"
+            android:layout_marginTop="30dp"
+            android:hint="Propose a new date"
+            android:text="21-2-2015:22:53" />
+
+    </LinearLayout>
+
+   </ScrollView>
 
     <Button
         android:layout_width="wrap_content"

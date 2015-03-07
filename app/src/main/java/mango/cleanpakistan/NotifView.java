@@ -1,6 +1,7 @@
 package mango.cleanpakistan;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -9,6 +10,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.parse.GetCallback;
+import com.parse.ParseException;
+import com.parse.ParseFile;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
@@ -24,16 +33,34 @@ public class NotifView extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notif_view);
-        Intent intent = getIntent();
-        String objectId = intent.getStringExtra("objectId");
-
         ivPostedImage = (ImageView) findViewById(R.id.ivPostedImage);
         tvProposedMsg = (TextView) findViewById(R.id.proMsg);
         etNewDate = (EditText) findViewById(R.id.etDate);
         btnNo = (Button) findViewById(R.id.btnNo);
         btnYes = (Button) findViewById(R.id.btn_yes);
-    }
+//        getActionBar().setDisplayHomeAsUpEnabled(true);
+        Intent intent = getIntent();
+        String objectId = intent.getStringExtra("objectId");
+        Toast.makeText(this, "The object ID is " + objectId, Toast.LENGTH_SHORT).show();
 
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Form");
+        query.whereEqualTo("objectId", objectId);
+        query.getFirstInBackground(new GetCallback<ParseObject>() {
+            @Override
+            public void done(ParseObject parseObject, ParseException e) {
+                if (e == null) {
+                    ParseFile file = parseObject.getParseFile("picture");
+                    Uri fileUri = Uri.parse(file.getUrl());
+                    Toast.makeText(NotifView.this, fileUri.toString(), Toast.LENGTH_SHORT).show();
+                    Picasso.with(NotifView.this).load(fileUri.toString()).into(ivPostedImage);
+                    //Set Message
+                    String mProposedMsg = parseObject.getString("message");
+                    tvProposedMsg.setText(mProposedMsg);
+                }
+            }
+        });
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
