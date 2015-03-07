@@ -44,7 +44,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 
 public class Form extends ActionBarActivity implements LocationListener {
     private static final int TAKE_PHOTO_REQUEST = 1001;
@@ -60,21 +59,21 @@ public class Form extends ActionBarActivity implements LocationListener {
     private Uri imgURi;
     private Uri selectedImageUri;
     private Uri selectedImage;
-    String addressText = " ";
-    double latitude;
-    double longitude;
 //    private ProgressBar progressBar;
 
     public Location location;
     LocationManager locationManager;
     String provider;
-//    Geocoder geocoder;
+    Geocoder geocoder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form);
+
+        Parse.initialize(this, "QYP3WEGkoWbgGFcjUVO6n4x18s7pLziFbHJHZcDf", "yKm8tqxzFIkXnmWlY9jHISd6wPbTD9zcSS13ysdo");
+        ParseInstallation.getCurrentInstallation().saveInBackground();
 //        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         imgBtn = (ImageView) findViewById(R.id.imageButton);
         btnReport = (Button) findViewById(R.id.btn_report);
@@ -84,20 +83,24 @@ public class Form extends ActionBarActivity implements LocationListener {
             @Override
             public void onClick(View v) {
                 startCamera();
+//                Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                startActivityForResult(captureIntent, TAKE_PHOTO_REQUEST);
+
+
             }
         });
 
         btnReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//
-                //------------------------FARRUKH'S CODE-------------------------
-                /*
+//                Intent inShare = new Intent(Intent.ACTION_SEND);
+//                inShare.setType("Image/png");
+//                inShare.putExtra(Intent.EXTRA_STREAM, imgURi);
+//                startActivity(inShare);
                 locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 geocoder = new Geocoder(Form.this);
                 Criteria criteria = new Criteria();
                 provider = locationManager.getBestProvider(criteria, false);
-<<<<<<< HEAD
 
                 locationManager.requestLocationUpdates(provider, 400, 1, Form.this );
                 location = locationManager.getLastKnownLocation(provider);
@@ -117,50 +120,8 @@ public class Form extends ActionBarActivity implements LocationListener {
                     } catch (IOException e) {
                         Toast.makeText(Form.this, "" + e, Toast.LENGTH_SHORT).show();
                     }
-=======
-                location = locationManager.getLastKnownLocation(provider);
-                locationManager.requestLocationUpdates(provider, 400, 1, Form.this);
-
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                String addressText = "";
-
-                try {
-                    List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 10);
-                    for (Address address : addresses) {
-                        //Toast.makeText(Form.this,"Address: "+address.getAddressLine(0),Toast.LENGTH_LONG).show();
-                        addressText = addressText + address.getAddressLine(0) + ", ";
-                        //Toast.makeText(Form.this,addressText,Toast.LENGTH_LONG).show();
-                    }
-                } catch (IOException e) {
-                    Toast.makeText(Form.this, "" + e, Toast.LENGTH_SHORT).show();
-                }
-                */
-
-                //---------------------FARRUKH CODE END---------------------------
 
 
-                GPSTracker gps = new GPSTracker(Form.this);
-                if (gps.canGetLocation()) {
-
-                    latitude = gps.getLatitude();
-                    longitude = gps.getLongitude();
-                    if (CheckNetwork.isInternetAvailable(Form.this)) {
-                        Toast.makeText(getApplicationContext(), "Getting the location name...", Toast.LENGTH_SHORT).show();
-                        addressText = GetAddress(latitude, longitude);
-                        Toast.makeText(getApplicationContext(), "Got " + addressText, Toast.LENGTH_SHORT).show();
-                        Log.i("Location", "Got the location name!");
-                    } else {
-                        Toast.makeText(Form.this, "No Internet!", Toast.LENGTH_SHORT).show();
-                    }
-//                    String pinpoint = "http://www.maps.google.com/maps?q="
-//                            + String.valueOf(latitude) + "," + String.valueOf(longitude);
-                }
->>>>>>> origin/master
-
-                ParseGeoPoint point = new ParseGeoPoint(latitude, longitude);
-
-<<<<<<< HEAD
                     setProgressBarIndeterminateVisibility(true);
                     ParseObject message = new ParseObject("Form");
                     message.put("username", ParseUser.getCurrentUser().getUsername());
@@ -168,14 +129,6 @@ public class Form extends ActionBarActivity implements LocationListener {
                     message.put("message", etMessage.getText().toString());
                     ParseGeoPoint point = new ParseGeoPoint(latitude, longitude);
                     message.put("gPoint", point);
-=======
-                setProgressBarIndeterminateVisibility(true);
-                ParseObject message = new ParseObject("Form");
-                message.put("username", ParseUser.getCurrentUser().getUsername());
-                message.put("location", addressText);
-                message.put("message", etMessage.getText().toString());
-                message.put("gPoint", point);
->>>>>>> origin/master
 
                     ////
                     byte[] fileBytes = FileHelper.getByteArrayFromFile(Form.this, selectedImageUri);
@@ -184,7 +137,6 @@ public class Form extends ActionBarActivity implements LocationListener {
                         message = null;
                     } else {
 
-<<<<<<< HEAD
                         fileBytes = FileHelper.reduceImageForUpload(fileBytes);
                     }
                     String fileName = FileHelper.getFileName(Form.this, selectedImageUri, "image");
@@ -206,28 +158,6 @@ public class Form extends ActionBarActivity implements LocationListener {
                                     jsonObject = new JSONObject();
                                     jsonObject.put("objectId", curObjectId);
                                     jsonObject.put("alert", etMessage.getText().toString());
-=======
-                    fileBytes = FileHelper.reduceImageForUpload(fileBytes);
-                }
-                String fileName = FileHelper.getFileName(Form.this, selectedImageUri, "image");
-                ParseFile file = new ParseFile(fileName, fileBytes);
-                message.put("picture", file);
-
-                final ParseObject finalMessage = message;
-                message.saveInBackground(new SaveCallback() {
-
-                    @Override
-                    public void done(ParseException e) {
-                        setProgressBarIndeterminateVisibility(false);
-                        if (e == null) {
-                            //success!
-                            Toast.makeText(Form.this, "Successfully Uploaded Images", Toast.LENGTH_LONG).show();
-                            curObjectId = finalMessage.getObjectId();
-                            try {
-                                jsonObject = new JSONObject();
-                                jsonObject.put("objectId", curObjectId);
-                                jsonObject.put("alert", etMessage.getText().toString());
->>>>>>> origin/master
 //                                jsonObject.put("message", etMessage.getText().toString());
                                     Toast.makeText(Form.this, jsonObject.toString(), Toast.LENGTH_LONG).show();
 
@@ -251,18 +181,12 @@ public class Form extends ActionBarActivity implements LocationListener {
                                 dialog.show();
                             }
                         }
-<<<<<<< HEAD
                     });
 
                 }else{
                     Toast.makeText(Form.this,"Please turn on GPS First",Toast.LENGTH_SHORT).show();
                 }
                 ////
-=======
-                    }
-                });
-
->>>>>>> origin/master
             }
         });
 
@@ -294,6 +218,11 @@ public class Form extends ActionBarActivity implements LocationListener {
                     Bitmap bitmap;
                     bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, selectedImage);
                     imgBtn.setImageBitmap(bitmap);
+
+                    ////
+
+
+                    ////
 
                 } catch (Exception e) {
                     Toast.makeText(this, "Failed to load", Toast.LENGTH_SHORT)
@@ -335,24 +264,6 @@ public class Form extends ActionBarActivity implements LocationListener {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_form, menu);
         return true;
-    }
-
-    public String GetAddress(double lat, double lon) {
-        Geocoder geocoder = new Geocoder(this, Locale.ENGLISH);
-        String adText = "";
-        try {
-            List<Address> addresses = geocoder.getFromLocation(lat, lon, 10);
-            for (Address address : addresses) {
-                //Toast.makeText(Form.this,"Address: "+address.getAddressLine(0),Toast.LENGTH_LONG).show();
-                adText = addressText + address.getAddressLine(0) + ", ";
-                //Toast.makeText(Form.this,addressText,Toast.LENGTH_LONG).show();
-            }
-        } catch (IOException e) {
-            Toast.makeText(Form.this, "" + e, Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-            adText = null;
-        }
-        return adText;
     }
 
     @Override
