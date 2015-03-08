@@ -59,7 +59,14 @@ public class Form extends ActionBarActivity implements LocationListener {
     private Uri imgURi;
     private Uri selectedImageUri;
     private Uri selectedImage;
-//    private ProgressBar progressBar;
+
+    /****location******/
+    double latitude;
+    double longitude;
+    String addressText = "";
+    /********Fin********/
+
+    //    private ProgressBar progressBar;
 
     public Location location;
     LocationManager locationManager;
@@ -97,30 +104,18 @@ public class Form extends ActionBarActivity implements LocationListener {
 //                inShare.setType("Image/png");
 //                inShare.putExtra(Intent.EXTRA_STREAM, imgURi);
 //                startActivity(inShare);
+
+
+                /******Location*****/
                 locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 geocoder = new Geocoder(Form.this);
                 Criteria criteria = new Criteria();
-                provider = locationManager.getBestProvider(criteria, false);
-
+                provider = locationManager.getBestProvider(criteria, true);
                 locationManager.requestLocationUpdates(provider, 400, 1, Form.this );
                 location = locationManager.getLastKnownLocation(provider);
 
                 if(location != null) {
-                    double latitude = location.getLatitude();
-                    double longitude = location.getLongitude();
-                    String addressText = "";
-
-                    try {
-                        List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 10);
-                        for (Address address : addresses) {
-                            //Toast.makeText(Form.this,"Address: "+address.getAddressLine(0),Toast.LENGTH_LONG).show();
-                            addressText = addressText + address.getAddressLine(0) + ", ";
-                            //Toast.makeText(Form.this,addressText,Toast.LENGTH_LONG).show();
-                        }
-                    } catch (IOException e) {
-                        Toast.makeText(Form.this, "" + e, Toast.LENGTH_SHORT).show();
-                    }
-
+                    onLocationChanged(location);
 
                     setProgressBarIndeterminateVisibility(true);
                     ParseObject message = new ParseObject("Form");
@@ -169,7 +164,7 @@ public class Form extends ActionBarActivity implements LocationListener {
                                 } catch (JSONException e1) {
                                     e1.printStackTrace();
                                 }
-//
+
 
                             } else {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(
@@ -184,14 +179,18 @@ public class Form extends ActionBarActivity implements LocationListener {
                     });
 
                 }else{
-                    Toast.makeText(Form.this,"Please turn on GPS First",Toast.LENGTH_SHORT).show();
+                    location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+                    if (location == null){location = locationManager.getLastKnownLocation((LocationManager.NETWORK_PROVIDER));}
+                    onLocationChanged(location);
+                    if(location == null)
+                    Toast.makeText(Form.this,"Please turn on GPS First"+location,Toast.LENGTH_SHORT).show();
+
                 }
                 ////
             }
         });
 
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -283,6 +282,21 @@ public class Form extends ActionBarActivity implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+        latitude = location.getLatitude();
+        longitude = location.getLongitude();
+
+
+        try {
+            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 10);
+            for (Address address : addresses) {
+                //Toast.makeText(Form.this,"Address: "+address.getAddressLine(0),Toast.LENGTH_LONG).show();
+                addressText = addressText + address.getAddressLine(0) + ", ";
+                //Toast.makeText(Form.this,addressText,Toast.LENGTH_LONG).show();
+            }
+        } catch (IOException e) {
+            Toast.makeText(Form.this, "" + e, Toast.LENGTH_SHORT).show();
+        }
+
 
     }
 
