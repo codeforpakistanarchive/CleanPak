@@ -1,6 +1,7 @@
 package mango.cleanpakistan;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ public class NotifView extends ActionBarActivity {
     Button btnNo;
     Button btnYes;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +54,9 @@ public class NotifView extends ActionBarActivity {
                     ParseFile file = parseObject.getParseFile("picture");
                     Uri fileUri = Uri.parse(file.getUrl());
                     Toast.makeText(NotifView.this, fileUri.toString(), Toast.LENGTH_SHORT).show();
-                    Picasso.with(NotifView.this).load(fileUri.toString()).into(ivPostedImage);
+
+                    Picasso.with(NotifView.this).load(fileUri.toString()).error(R.drawable.error_logo).placeholder(R.drawable.loading).into(ivPostedImage);
+
                     //Set Message
                     String mProposedMsg = parseObject.getString("message");
                     tvProposedMsg.setText(mProposedMsg);
