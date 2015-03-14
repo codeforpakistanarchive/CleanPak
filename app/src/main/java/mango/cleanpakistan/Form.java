@@ -1,6 +1,7 @@
 package mango.cleanpakistan;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,6 +14,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -24,6 +26,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -36,13 +39,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+import java.util.Locale;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class Form extends ActionBarActivity implements LocationListener {
     private static final int TAKE_PHOTO_REQUEST = 01;
-    private static final String TAG = mango.cleanpakistan.MainActivity.class.getSimpleName();
-    private static final String FILE_NAME = "CleanPakistan";
     private static final int CHOOSE_FROM_GALLERY_REQUEST = 02;
+    private static final String TAG = Form.class.getSimpleName();
+    private static final String FILE_NAME = "CleanPakistan";
     String curObjectId;
     JSONObject jsonObject;
     Button btnReport;
@@ -53,7 +59,7 @@ public class Form extends ActionBarActivity implements LocationListener {
     private Uri imgURi;
     private Uri selectedImageUri;
     private Uri selectedImage;
-
+    private ProgressDialog progress;
     /**
      * *location*****
      */
@@ -78,7 +84,21 @@ public class Form extends ActionBarActivity implements LocationListener {
             switch (which) {
                 case 0: //Take Photo
                     startCamera();
+                    Intent takePhotoIntent = new Intent(
+                            MediaStore.ACTION_IMAGE_CAPTURE);
+                    selectedImageUri = getOutputMediaFileUri();
+                    if (selectedImageUri == null) {
+                        // display an error
+                        Toast.makeText(Form.this,
+                                "Error in External Storage", Toast.LENGTH_LONG)
+                                .show();
+                    } else {
+                        takePhotoIntent
+                                .putExtra(MediaStore.EXTRA_OUTPUT, selectedImageUri);
+                        startActivityForResult(takePhotoIntent, TAKE_PHOTO_REQUEST);
+                    }
                     break;
+
                 case 1: //Choose from Gallery
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
@@ -86,13 +106,66 @@ public class Form extends ActionBarActivity implements LocationListener {
                     break;
             }
         }
+
+        private Uri getOutputMediaFileUri() {
+            // To be safe, you should check that the SDCard is mounted
+            // using Environment.getExternalStorageState() before doing this.
+
+            if (isExternalStorageAvailable()) {
+                // get the URI
+                String appName = Form.this.getString(R.string.app_name);
+                // 1. Get the external storage directory
+                File mediaStorageDir = new File(
+                        Environment
+                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                        appName);
+
+                // 2. Create our subdirectory
+                if (!mediaStorageDir.exists()) {
+                    if (!mediaStorageDir.mkdirs()) {
+                        Log.e(TAG, "Failed to create directory");
+                        return null;
+                    }
+
+                }
+
+                // 3. Create a file name
+                // 4. Create the file
+                File mediaFile;
+                Date now = new Date();
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss",
+                        Locale.US).format(now);
+                String path = mediaStorageDir.getPath() + File.separator;
+                mediaFile = new File(path + "IMG_" + timeStamp + ".jpg");
+                Log.d(TAG, "File: " + Uri.fromFile(mediaFile));
+                // 5. Return the file's uri
+                return Uri.fromFile(mediaFile);
+            }
+
+            else {
+                return null;
+            }
+        }
+
+        private boolean isExternalStorageAvailable() {
+            String state = Environment.getExternalStorageState();
+            if (state.equals(Environment.MEDIA_MOUNTED)) {
+
+                return true;
+            } else {
+                return false;
+            }
+        }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form);
+        progress = new ProgressDialog(this);
+
 //        Parse.initialize(this, "QYP3WEGkoWbgGFcjUVO6n4x18s7pLziFbHJHZcDf", "yKm8tqxzFIkXnmWlY9jHISd6wPbTD9zcSS13ysdo");
 //        ParseInstallation.getCurrentInstallation().saveInBackground();
 //        progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -120,6 +193,10 @@ public class Form extends ActionBarActivity implements LocationListener {
             @Override
             public void onClick(View v) {
                 /******Location*****/
+                progress.setMessage("Be Patient, It's Spreading...");
+                progress.setProgressStyle(ProgressDialog.THEME_HOLO_LIGHT);
+                progress.setIndeterminate(true);
+                progress.show();
                 locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 geocoder = new Geocoder(Form.this);
                 Criteria criteria = new Criteria();
@@ -129,12 +206,12 @@ public class Form extends ActionBarActivity implements LocationListener {
 
                 if (location != null) {
                     onLocationChanged(location);
-                    setProgressBarIndeterminateVisibility(true);
+                    ParseGeoPoint point = new ParseGeoPoint(latitude, longitude);
+                    progress.setProgress(25);
                     ParseObject message = new ParseObject("Form");
                     message.put("username", ParseUser.getCurrentUser().getUsername());
                     message.put("location", addressText);
                     message.put("message", etMessage.getText().toString());
-                    ParseGeoPoint point = new ParseGeoPoint(latitude, longitude);
                     message.put("gPoint", point);
 
                     ////
@@ -148,14 +225,16 @@ public class Form extends ActionBarActivity implements LocationListener {
                     String fileName = FileHelper.getFileName(Form.this, selectedImage, "image");
                     ParseFile file = new ParseFile(fileName, fileBytes);
                     message.put("picture", file);
-
-
+                    progress.setProgress(50);
+                    setSupportProgressBarIndeterminateVisibility(true);
                     final ParseObject finalMessage = message;
                     message.saveInBackground(new SaveCallback() {
 
                         @Override
                         public void done(ParseException e) {
-                            setProgressBarIndeterminateVisibility(false);
+                            setSupportProgressBarIndeterminateVisibility(false);
+                            progress.setProgress(100);
+                            progress.dismiss();
                             if (e == null) {
                                 //success!
                                 Toast.makeText(Form.this, "Successfully Uploaded Images", Toast.LENGTH_LONG).show();
@@ -256,7 +335,7 @@ public class Form extends ActionBarActivity implements LocationListener {
 
 
     public void startCamera() {
-        File photo = null;
+       /* File photo = null;
         Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
         if (android.os.Environment.getExternalStorageState().equals(
                 android.os.Environment.MEDIA_MOUNTED)) {
@@ -269,7 +348,8 @@ public class Form extends ActionBarActivity implements LocationListener {
             intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
             selectedImageUri = Uri.fromFile(photo);
             startActivityForResult(intent, TAKE_PHOTO_REQUEST);
-        }
+        }*/
+
     }
 
 
