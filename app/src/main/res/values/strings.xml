@@ -10,4 +10,9 @@
     <string name="title_activity_main">Main</string>
     <string name="title_activity_notif_view">NotifView</string>
 
+    <string-array name="camera_choices">
+        <item>Take a Picture</item>
+        <item>Choose From Gallery</item>
+    </string-array>
+
 </resources>

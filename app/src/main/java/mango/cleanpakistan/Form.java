@@ -1,9 +1,9 @@
 package mango.cleanpakistan;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.location.Address;
@@ -24,31 +24,25 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
-import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParsePush;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 public class Form extends ActionBarActivity implements LocationListener {
-    private static final int TAKE_PHOTO_REQUEST = 1001;
+    private static final int TAKE_PHOTO_REQUEST = 01;
     private static final String TAG = mango.cleanpakistan.MainActivity.class.getSimpleName();
-    private static final String FILE_NAME = "MyFile";
+    private static final String FILE_NAME = "CleanPakistan";
+    private static final int CHOOSE_FROM_GALLERY_REQUEST = 02;
     String curObjectId;
     JSONObject jsonObject;
     Button btnReport;
@@ -60,11 +54,15 @@ public class Form extends ActionBarActivity implements LocationListener {
     private Uri selectedImageUri;
     private Uri selectedImage;
 
-    /****location******/
+    /**
+     * *location*****
+     */
     double latitude;
     double longitude;
     String addressText = "";
-    /********Fin********/
+    /**
+     * *****Fin*******
+     */
 
     //    private ProgressBar progressBar;
 
@@ -73,23 +71,44 @@ public class Form extends ActionBarActivity implements LocationListener {
     String provider;
     Geocoder geocoder;
 
+    protected DialogInterface.OnClickListener mDialogInterface = new DialogInterface.OnClickListener() {
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case 0: //Take Photo
+                    startCamera();
+                    break;
+                case 1: //Choose from Gallery
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("image/*");
+                    startActivityForResult(intent, CHOOSE_FROM_GALLERY_REQUEST);
+                    break;
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form);
-
-        Parse.initialize(this, "QYP3WEGkoWbgGFcjUVO6n4x18s7pLziFbHJHZcDf", "yKm8tqxzFIkXnmWlY9jHISd6wPbTD9zcSS13ysdo");
-        ParseInstallation.getCurrentInstallation().saveInBackground();
+//        Parse.initialize(this, "QYP3WEGkoWbgGFcjUVO6n4x18s7pLziFbHJHZcDf", "yKm8tqxzFIkXnmWlY9jHISd6wPbTD9zcSS13ysdo");
+//        ParseInstallation.getCurrentInstallation().saveInBackground();
 //        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        imgBtn = (ImageView) findViewById(R.id.imageButton);
-        btnReport = (Button) findViewById(R.id.btn_report);
-        etMessage = (EditText) findViewById(R.id.etMessage);
-        etEventDate = (EditText) findViewById(R.id.etEventDate);
+
+        //Initialize Views
+        initViews();
+
         imgBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startCamera();
+                AlertDialog.Builder builder = new AlertDialog.Builder(
+                        Form.this);
+                builder.setTitle("Choose Action").setItems(R.array.camera_choices,
+                        mDialogInterface);
+                AlertDialog dialog = builder.create();
+                dialog.show();
 //                Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 //                startActivityForResult(captureIntent, TAKE_PHOTO_REQUEST);
 
@@ -100,23 +119,16 @@ public class Form extends ActionBarActivity implements LocationListener {
         btnReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent inShare = new Intent(Intent.ACTION_SEND);
-//                inShare.setType("Image/png");
-//                inShare.putExtra(Intent.EXTRA_STREAM, imgURi);
-//                startActivity(inShare);
-
-
                 /******Location*****/
                 locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 geocoder = new Geocoder(Form.this);
                 Criteria criteria = new Criteria();
                 provider = locationManager.getBestProvider(criteria, true);
-                locationManager.requestLocationUpdates(provider, 400, 1, Form.this );
+                locationManager.requestLocationUpdates(provider, 400, 1, Form.this);
                 location = locationManager.getLastKnownLocation(provider);
 
-                if(location != null) {
+                if (location != null) {
                     onLocationChanged(location);
-
                     setProgressBarIndeterminateVisibility(true);
                     ParseObject message = new ParseObject("Form");
                     message.put("username", ParseUser.getCurrentUser().getUsername());
@@ -126,15 +138,14 @@ public class Form extends ActionBarActivity implements LocationListener {
                     message.put("gPoint", point);
 
                     ////
-                    byte[] fileBytes = FileHelper.getByteArrayFromFile(Form.this, selectedImageUri);
+                    byte[] fileBytes = FileHelper.getByteArrayFromFile(Form.this, selectedImage);
 
                     if (fileBytes == null) {
                         message = null;
                     } else {
-
                         fileBytes = FileHelper.reduceImageForUpload(fileBytes);
                     }
-                    String fileName = FileHelper.getFileName(Form.this, selectedImageUri, "image");
+                    String fileName = FileHelper.getFileName(Form.this, selectedImage, "image");
                     ParseFile file = new ParseFile(fileName, fileBytes);
                     message.put("picture", file);
 
@@ -153,18 +164,15 @@ public class Form extends ActionBarActivity implements LocationListener {
                                     jsonObject = new JSONObject();
                                     jsonObject.put("objectId", curObjectId);
                                     jsonObject.put("alert", etMessage.getText().toString());
-//                                jsonObject.put("message", etMessage.getText().toString());
                                     Toast.makeText(Form.this, jsonObject.toString(), Toast.LENGTH_LONG).show();
 
                                     ParsePush push = new ParsePush();
-//                                push.setMessage(etMessage.getText().toString() + ". The place near I-8 in Pindi is too dirty - lets join and clean Pakistan on Sunday1st, March ");
                                     push.setData(jsonObject);
                                     push.sendInBackground();
 
                                 } catch (JSONException e1) {
                                     e1.printStackTrace();
                                 }
-
 
                             } else {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(
@@ -178,12 +186,14 @@ public class Form extends ActionBarActivity implements LocationListener {
                         }
                     });
 
-                }else{
+                } else {
                     location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-                    if (location == null){location = locationManager.getLastKnownLocation((LocationManager.NETWORK_PROVIDER));}
+                    if (location == null) {
+                        location = locationManager.getLastKnownLocation((LocationManager.NETWORK_PROVIDER));
+                    }
                     onLocationChanged(location);
-                    if(location == null)
-                    Toast.makeText(Form.this,"Please turn on GPS First"+location,Toast.LENGTH_SHORT).show();
+                    if (location == null)
+                        Toast.makeText(Form.this, "Please turn on GPS First" + location, Toast.LENGTH_SHORT).show();
 
                 }
                 ////
@@ -192,55 +202,60 @@ public class Form extends ActionBarActivity implements LocationListener {
 
     }
 
+
+    private void initViews() {
+        imgBtn = (ImageView) findViewById(R.id.imageButton);
+        btnReport = (Button) findViewById(R.id.btn_report);
+        etMessage = (EditText) findViewById(R.id.etMessage);
+        etEventDate = (EditText) findViewById(R.id.etEventDate);
+    }
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG + "OnActivityResult Aizaz", Integer.toString(requestCode) + Integer.toString(resultCode));
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case TAKE_PHOTO_REQUEST:
+                    try {
+                        selectedImage = selectedImageUri;
+                        //getContentResolver().notifyChange(selectedImage, null);
+                        ContentResolver cr = getContentResolver();
+                        Bitmap bitmap;
+                        bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, selectedImage);
+                        imgBtn.setImageBitmap(bitmap);
 
-//           imgURi = data.getData();
-//
-//                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),imgURi);
-//                bitmap = (Bitmap) data.getExtras().get("data");
-//                imgBtn.setImageBitmap(bitmap);
-//            Toast.makeText(Form.this, "Image got the data: " + data.getData().toString(), Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Failed to load", Toast.LENGTH_SHORT)
+                                .show();
+                        Log.e("Camera", e.toString());
+                    }
+                    break;
 
-
-        if (requestCode == TAKE_PHOTO_REQUEST) {
-
-
-            if (resultCode == Activity.RESULT_OK) {
-
-                try {
-                    selectedImage = selectedImageUri;
-                    //getContentResolver().notifyChange(selectedImage, null);
-                    ContentResolver cr = getContentResolver();
-                    Bitmap bitmap;
-                    bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, selectedImage);
-                    imgBtn.setImageBitmap(bitmap);
-
-                    ////
-
-
-                    ////
-
-                } catch (Exception e) {
-                    Toast.makeText(this, "Failed to load", Toast.LENGTH_SHORT)
-                            .show();
-                    Log.e("Camera", e.toString());
-                }
-
-            } else {
-                selectedImageUri = null;
-                imgBtn.setImageBitmap(null);
+                case CHOOSE_FROM_GALLERY_REQUEST:
+                    try {
+                        selectedImage = data.getData();
+                        ContentResolver cr = getContentResolver();
+                        Bitmap bitmap;
+                        bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, selectedImage);
+                        imgBtn.setImageBitmap(bitmap);
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Failed to load", Toast.LENGTH_SHORT)
+                                .show();
+                        Log.e("Camera", e.toString());
+                    }
+                    break;
             }
-
+        } else {
+            selectedImageUri = null;
+            imgBtn.setImageBitmap(null);
         }
 
     }
 
 
     public void startCamera() {
-
         File photo = null;
         Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
         if (android.os.Environment.getExternalStorageState().equals(
@@ -315,3 +330,7 @@ public class Form extends ActionBarActivity implements LocationListener {
 
     }
 }
+
+
+
+
